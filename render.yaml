@@ -6,8 +6,6 @@ services:
     startCommand: python main.py
     envVars:
       - key: TELEGRAM_BOT_TOKEN
-        scope: PROJECT
       - key: WEBHOOK_URL
-        scope: PROJECT
       - key: PORT
         value: "8000"
