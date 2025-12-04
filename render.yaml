@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: sbermobile-bot
+    env: docker
+    region: oregon
+    plan: free
+    dockerfile: ./Dockerfile
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        value: ""
