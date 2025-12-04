@@ -1,6 +1,7 @@
 """
 app/bot.py
 Основной модуль с логикой бота
+Поддерживает polling и webhook режимы
 """
 
 import os
@@ -12,7 +13,6 @@ from telegram.ext import (
     MessageHandler, 
     filters,
     ContextTypes,
-    BaseHandler
 )
 
 from app.handlers import (
@@ -26,9 +26,51 @@ from app.database import init_database, close_database
 
 logger = logging.getLogger(__name__)
 
-def create_bot(port: int = 8000, webhook_url: str = None):
+def create_bot_polling():
     """
-    Создать и настроить бота с веб-хуками
+    Создать и запустить бота в режиме POLLING (бесплатный)
+    Бот сам спрашивает Telegram API о новых сообщениях каждую секунду
+    """
+    
+    token = os.getenv('TELEGRAM_BOT_TOKEN')
+    if not token:
+        raise ValueError("TELEGRAM_BOT_TOKEN не установлен!")
+    
+    # Инициализировать базу данных
+    init_database()
+    logger.info("📊 База данных инициализирована")
+    
+    # Создать приложение
+    app = Application.builder().token(token).build()
+    
+    # Регистрация обработчиков команд
+    app.add_handler(CommandHandler("start", start_command))
+    app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("contact", contact_command))
+    app.add_handler(CommandHandler("categories", categories_command))
+    
+    # Обработчик для обычных сообщений (должен быть в конце!)
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    
+    # Обработка ошибок
+    app.add_error_handler(error_handler)
+    
+    # Установить команды бота
+    logger.info("⚙️  Регистрация команд бота...")
+    
+    # Запустить бота в режиме POLLING
+    logger.info("🔄 Запуск в режиме POLLING (Render Free Tier)")
+    logger.info("⏱️  Проверка сообщений каждую секунду...")
+    
+    app.run_polling(
+        allowed_updates=Update.ALL_TYPES,
+        close_loop_on_stop=True
+    )
+
+def create_bot_webhook(port: int = 8000, webhook_url: str = None):
+    """
+    Создать и запустить бота с WEBHOOK (платный)
+    Telegram сам отправляет сообщения боту через HTTP
     
     Args:
         port: Порт для веб-сервера
@@ -62,7 +104,7 @@ def create_bot(port: int = 8000, webhook_url: str = None):
     app.add_error_handler(error_handler)
     
     # Установить команды бота
-    setup_bot_commands(app)
+    logger.info("⚙️  Регистрация команд бота...")
     
     # Настроить веб-хуки
     logger.info(f"🔗 Настройка веб-хука: {webhook_url}")
@@ -75,20 +117,7 @@ def create_bot(port: int = 8000, webhook_url: str = None):
         webhook_url=webhook_url
     )
     
-    return app, app
-
-async def setup_bot_commands(app: Application):
-    """Установить команды бота в интерфейс Telegram"""
-    
-    commands = [
-        BotCommand("start", "🚀 Начать диалог"),
-        BotCommand("help", "❓ Справка"),
-        BotCommand("categories", "📂 Категории FAQ"),
-        BotCommand("contact", "☎️ Контакты поддержки"),
-    ]
-    
-    await app.bot.set_my_commands(commands)
-    logger.info("✅ Команды бота установлены")
+    return app
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработка ошибок"""
