@@ -6,6 +6,8 @@ services:
     startCommand: python main.py
     envVars:
       - key: TELEGRAM_BOT_TOKEN
+        value: ""
       - key: WEBHOOK_URL
+        value: ""
       - key: PORT
         value: "8000"
