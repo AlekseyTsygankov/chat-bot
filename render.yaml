@@ -1,0 +1,19 @@
+name: SberMobile Telegram Support Bot
+runtime: python-3.11
+services:
+  - type: web
+    name: sbermobile-bot
+    runtime: python
+    pythonVersion: 3.11
+    buildCommand: |
+      pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        scope: PROJECT
+        generateValue: true
+      - key: WEBHOOK_URL
+        scope: PROJECT
+        generateValue: false
+      - key: PORT
+        value: "8000"

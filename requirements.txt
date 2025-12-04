@@ -1,0 +1,26 @@
+# Зависимости для SberMobile Telegram Bot
+
+# Telegram Bot API
+python-telegram-bot==20.5
+
+# Для работы с веб-хуками
+aiohttp==3.9.1
+httpx==0.25.1
+
+# Хранилище данных
+# (SQLite встроенный в Python, дополнительно не требуется)
+
+# Утилиты
+python-dotenv==1.0.0
+
+# Для сериализации
+pydantic==2.5.0
+
+# Логирование
+python-json-logger==2.0.7
+
+# Для асинхронных операций (уже в PTB, но явно указываем)
+asyncio-contextmanager==1.0.0
+
+# Дополнительно для продакшена
+gunicorn==21.2.0  # WSGI сервер (опционально)
